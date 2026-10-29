@@ -1,0 +1,15 @@
+{
+  "name": "Premium App",
+  "short_name": "Premium",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#1e3c72",
+  "theme_color": "#1e3c72",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1043/1043108.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

